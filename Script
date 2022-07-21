@@ -24,7 +24,7 @@ plink --bfile banco_edupca --pca 10 header tabs var-wts --out pca_keepedu
 Rscript PRSice.R --prsice PRSice_linux --base edu23_semMHC_maf2 --target t3coo04.qc --thread 1 --stat BETA  --bar-levels 5e-8,5e-6,0.05,0.5 -–fastscore --x-range chr6:26000000-33000000 --score sum --all-score –-no-full -–print-snp --binary-target T
 
 
-# Step 4: Main analysis using stata
+# Step 4: Main and supplementaty analysis using stata
 
 #Performing z-scores. For that use:
 egen znovo5e8 = std(novo_5e8), mean(0) std(1)
@@ -127,6 +127,34 @@ regress iznovo5e6 conduct4a_cont novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 no
 regress iznovo5e2 conduct4a_cont novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if usegenetica==1
 regress iznovo05 conduct4a_cont novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if usegenetica==1
 
+
+#Supplementary Table 4: Testing the moderator effects for income. For that use:
+#Low vs. persistent:
+logistic lowpersist asexo esc48 edi lowbdi lowqi attention educacao##renda48
+logistic lowpersist educacao asexo esc48 edi lowbdi lowqi attention if renda48==1
+logistic lowpersist educacao asexo esc48 edi lowbdi lowqi attention if renda48==2
+logistic lowpersist educacao asexo esc48 edi lowbdi lowqi attention if renda48==3
+logistic lowpersist esc48 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo renda48##c.zpt005
+logistic lowpersist c.zpt005 esc48 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if renda48==1
+logistic lowpersist c.zpt005 esc48 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if renda48==2
+logistic lowpersist c.zpt005 esc48 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if renda48==3
+#Low vs. childhood-limited: 
+logistic lowchild asexo esc48 edi lowbdi lowqi attention  educacao##renda48
+logistic lowchild educacao asexo esc48 edi lowbdi lowqi attention if renda48==1
+logistic lowchild educacao asexo esc48 edi lowbdi lowqi attention if renda48==2
+logistic lowchild educacao asexo esc48 edi lowbdi lowqi attention if renda48==3
+logistic lowchild esc48 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo renda48##c.zpt005
+logistic lowchild c.zpt005 esc48 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if renda48==1
+logistic lowchild c.zpt005 esc48 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if renda48==2
+logistic lowchild c.zpt005 esc48 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if renda48==3
+#Low vs. adolescent-onset:logistic lowadols asexo esc48 edi lowbdi lowqi attention educacao##renda48
+logistic lowadols educacao asexo esc48 edi lowbdi lowqi attention if renda48==1
+logistic lowadols educacao asexo esc48 edi lowbdi lowqi attention if renda48==2
+logistic lowadols educacao asexo esc48 edi lowbdi lowqi attention if renda48==3
+logistic lowadols esc48 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo renda48##c.zpt005
+logistic lowadols c.zpt005 esc48 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if renda48==1
+logistic lowadols c.zpt005 esc48 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if renda48==2
+logistic lowadols c.zpt005 esc48 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if renda48==3
 
 
 
