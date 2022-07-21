@@ -82,22 +82,34 @@ prop trajfinal, over (usegenetica)
 (model C) mlogit trajfinal iznovo5e2 asexo esc48 renda48 itercamb novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 if usegenetica==1, b(1) rr
 
 
-#Table 3: Testing the moderator effects. For that use:
+#Table 3: Testing the moderator effects for school environment score. For that use:
 #Low vs. persistent:
 logistic lowpersist asexo esc48 renda48 edi lowbdi lowqi attention itercamb##educacao
 logistic lowpersist educacao asexo esc48 renda48 edi lowbdi lowqi attention if itercamb==1
 logistic lowpersist educacao asexo esc48 renda48 edi lowbdi lowqi attention if itercamb==2
 logistic lowpersist educacao asexo esc48 renda48 edi lowbdi lowqi attention if itercamb==3
+logistic lowpersist novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo esc48 renda48 itercamb##c.iznovo5e2
+logistic lowpersist c.iznovo5e2 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo esc48 renda48 if itercamb==1
+logistic lowpersist c.iznovo5e2 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo esc48 renda48 if itercamb==2
+logistic lowpersist c.iznovo5e2 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo esc48 renda48 if itercamb==3
 #Low vs. childhood-limited: 
 logistic lowchild asexo esc48 renda48 edi lowbdi lowqi attention itercamb##educacao
 logistic lowchild educacao asexo esc48 renda48 edi lowbdi lowqi attention if itercamb==1
 logistic lowchild educacao asexo esc48 renda48 edi lowbdi lowqi attention if itercamb==2
 logistic lowchild educacao asexo esc48 renda48 edi lowbdi lowqi attention if itercamb==3
+logistic lowchild novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo esc48 renda48 itercamb##c.iznovo5e2
+logistic lowchild c.iznovo5e2 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo esc48 renda48 if itercamb==1
+logistic lowchild c.iznovo5e2 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo esc48 renda48 if itercamb==2
+logistic lowchild c.iznovo5e2 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo esc48 renda48 if itercamb==3
 #Low vs. adolescent-onset:
 logistic lowadols asexo esc48 renda48 edi lowbdi lowqi attention itercamb##educacao
 logistic lowadols educacao asexo esc48 renda48 edi lowbdi lowqi attention if itercamb==1
 logistic lowadols educacao asexo esc48 renda48 edi lowbdi lowqi attention if itercamb==2
 logistic lowadols educacao asexo esc48 renda48 edi lowbdi lowqi attention if itercamb==3
+logistic lowadols novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo esc48 renda48 itercamb##c.iznovo5e2
+logistic lowadols c.iznovo5e2 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo esc48 renda48 if itercamb==1
+logistic lowadols c.iznovo5e2 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo esc48 renda48 if itercamb==2
+logistic lowadols c.iznovo5e2 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo esc48 renda48 if itercamb==3
 
 
 
