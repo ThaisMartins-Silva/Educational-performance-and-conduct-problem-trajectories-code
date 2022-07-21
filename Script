@@ -67,4 +67,22 @@ ttest attention, by (usegenetica)
 ta trajfinal usegenetica, col chi  
 prop trajfinal, over (usegenetica)
 
+#Table 2: Description of sample. For that use:
+#Low as referencia==0
+(model A) mlogit trajfinal educacao asexo esc48 renda48 edi itercamb lowbdi lowqi attention if usegenetica==1, b(0) rr
+(model B) mlogit trajfinal educacao asexo esc48 renda48 edi itercamb lowbdi lowqi attention conduct4a_cont if usegenetica==1, b(0) rr
+(model C) mlogit trajfinal iznovo5e2 asexo esc48 renda48 itercamb novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 if usegenetica==1, b(0) rr
+
+#Childhood-limited como referencia == 2
+(model A) mlogit trajfinal educacao asexo esc48 renda48 edi itercamb lowbdi lowqi attention if usegenetica==1, b(2) rr
+(model B) mlogit trajfinal educacao asexo esc48 renda48 edi itercamb lowbdi lowqi attention conduct4a_cont if usegenetica==1, b(2) rr
+(model C) mlogit trajfinal iznovo5e2 asexo esc48 renda48 itercamb novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 if usegenetica==1, b(2) rr
+
+#Adolescente-onset como referencia == 1
+(model A) mlogit trajfinal educacao asexo esc48 renda48 edi itercamb lowbdi lowqi attention if usegenetica==1, b(1) rr
+(model B) mlogit trajfinal educacao asexo esc48 renda48 edi itercamb lowbdi lowqi attention conduct4a_cont if usegenetica==1, b(1) rr
+(model C) mlogit trajfinal iznovo5e2 asexo esc48 renda48 itercamb novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 if usegenetica==1, b(1) rr
+
+
+
 
