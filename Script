@@ -19,3 +19,636 @@ To create the PCAs, use:
 plink --bfile banco_edupca --pca 10 header tabs var-wts --out pca_keepedu 
 
 
+# Step 3: Performing PRSs using PRSice
+
+Rscript PRSice.R --prsice PRSice_linux --base edu23_semMHC_maf2 --target t3coo04.qc --thread 1 --stat BETA  --bar-levels 5e-8,5e-6,0.05,0.5 -–fastscore --x-range chr6:26000000-33000000 --score sum --all-score –-no-full -–print-snp --binary-target T
+
+
+# Step 4: Main analysis using stata
+
+#Performing z-scores. For that use:
+egen znovo5e8 = std(novo_5e8), mean(0) std(1)
+egen znovo5e6 = std(novo_5e6), mean(0) std(1)
+egen znovo5e2 = std(novo_5e2), mean(0) std(1)
+egen znovo05 = std(novo_05), mean(0) std(1)
+
+#Converting to scale:
+gen iznovo5e8=znovo5e8*(-1)
+gen iznovo5e6=znovo5e6*(-1)
+gen iznovo5e2=znovo5e2*(-1)
+gen iznovo05=znovo05*(-1)
+
+sum novo_5e8 znovo5e8 iznovo5e8 izpt5e8
+sum novo_5e6 znovo5e6 iznovo5e6 izpt5e6
+sum novo_5e2 znovo5e2 iznovo5e2 izpt005
+sum novo_1 znovo1 iznovo1 
+sum novo_01 znovo01 iznovo01 izpt01
+
+***figura 1
+
+graph box iznovo1 if usegenetica==1, over(trajfig)
+graph dotplot iznovo1 if usegenetica==1, over(trajfig)
+quantile iznovo1 if usegenetica==1, over(trajfig)
+
+mean iznovo1 if usegenetica==1, over (trajfinal)
+
+*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TABELA 2 
+
+***investigando os Ns
+ta usegenetica
+sum zconduct4a zconduct6a zconduct11a zconduct15a if usegenetica==1
+
+
+***testando o PRS com as trantornos de conduta - trajetoria
+ta trajfinal, nol
+ta educacao trajfinal if usegenetica==1, col chi
+ta educacao trajfinal if usegenetica==1, row chi
+
+************************************ low como referencia==0
+
+mlogit trajfinal iznovo1 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if usegenetica==1, b(0) rr
+testparm iznovo1
+
+mlogit trajfinal iznovo1 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo conduct4a_cont if usegenetica==1, b(0) rr
+
+******************* childhood-limited como referencia == 2
+
+mlogit trajfinal iznovo1 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if usegenetica==1, b(2) rr
+testparm iznovo1
+
+mlogit trajfinal iznovo1 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo conduct4a_cont if usegenetica==1, b(2) rr
+
+
+******************* adolescente-onset como referencia == 1
+
+mlogit trajfinal iznovo1 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if usegenetica==1, b(1) rr
+testparm iznovo1
+
+mlogit trajfinal iznovo1 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo conduct4a_cont if usegenetica==1, b(1) rr
+
+
+********TESTANDO A INTERAÇÃO
+
+** trocar o banco == usar o banco "banco interação (exclui sem info genetica"
+ta usegenetica
+drop if usegenetica==0
+
+****** criar as variaveis para testar a interação
+
+**** Early-onset persistent vs. Childhood limited	
+ta trajfinal
+ta trajfinal, nol
+gen comp1=.
+replace comp1=1 if trajfinal==3
+replace comp1=0 if trajfinal==2
+la def comp1 1"persistent" 0"childhood-limited"
+la val comp1 comp1
+ta comp1
+
+**** Early-onset persistent vs. Adolescent onset
+gen comp2=.
+replace comp2=1 if trajfinal==3
+replace comp2=0 if trajfinal==1
+la def comp2 1"persistent" 0"adolescente"
+la val comp2 comp2
+ta comp2
+
+*** comparação com low x persistent
+gen lowpersist=.
+replace lowpersist=1 if trajfinal==3
+replace lowpersist=0 if trajfinal==0
+la def lowpersist 1"persistent" 0"low"
+la val lowpersist lowpersist
+ta lowpersist
+
+*** comparação com low x child
+gen lowchild=.
+replace lowchild=1 if trajfinal==2
+replace lowchild=0 if trajfinal==0
+la def lowchild 1"childhood" 0"low"
+la val lowchild lowchild
+ta lowchild
+
+*** comparação com low x adolescente
+gen lowadols=.
+replace lowadols=1 if trajfinal==1
+replace lowadols=0 if trajfinal==0
+la def lowadols 1"adolescente" 0"low"
+la val lowadols lowadols
+ta lowadols
+
+**PRS
+** interação com persistent
+
+logistic lowpersist esc48##c.iznovo1
+logistic lowpersist c.iznovo1 if esc48==0
+logistic lowpersist c.iznovo1 if esc48==1
+logistic lowpersist c.iznovo1 if esc48==2
+
+logistic lowpersist renda48##c.iznovo1
+logistic lowpersist c.iznovo1 if renda48==1
+logistic lowpersist c.iznovo1 if renda48==2
+logistic lowpersist c.iznovo1 if renda48==3
+
+logistic lowpersist itercamb##c.iznovo1
+logistic lowpersist c.iznovo1 if itercamb==1
+logistic lowpersist c.iznovo1 if itercamb==2
+logistic lowpersist c.iznovo1 if itercamb==3
+
+logistic lowpersist asexo##c.iznovo1
+
+** interação com child
+logistic lowchild esc48##c.iznovo1 
+logistic lowchild c.iznovo1 if esc48==0
+logistic lowchild c.iznovo1 if esc48==1
+logistic lowchild c.iznovo1 if esc48==2
+
+logistic lowchild renda48##c.iznovo1
+logistic lowchild c.iznovo1 if renda48==1
+logistic lowchild c.iznovo1 if renda48==2
+logistic lowchild c.iznovo1 if renda48==3
+
+logistic lowchild itercamb##c.iznovo1
+logistic lowchild c.iznovo1 if itercamb==1
+logistic lowchild c.iznovo1 if itercamb==2
+logistic lowchild c.iznovo1 if itercamb==3
+
+logistic lowchild asexo##c.iznovo1
+
+** interação com adolescent-onset
+logistic lowadols esc48##c.iznovo1 
+logistic lowadols c.iznovo1 if esc48==0
+logistic lowadols c.iznovo1 if esc48==1
+logistic lowadols c.iznovo1 if esc48==2
+
+logistic lowadols renda48##c.iznovo1
+logistic lowadols c.iznovo1 if renda48==1
+logistic lowadols c.iznovo1 if renda48==2
+logistic lowadols c.iznovo1 if renda48==3
+
+logistic lowadols itercamb##c.iznovo1 
+logistic lowadols c.iznovo1 if itercamb==1
+logistic lowadols c.iznovo1 if itercamb==2
+logistic lowadols c.iznovo1 if itercamb==3
+
+logistic lowadols asexo##c.iznovo1
+
+
+*  TABELA SUPLEMENTAR 2
+
+**** testando escore com a variavel de educação
+ta usegenetica
+ta educacao
+ta educacao if usegenetica==1
+
+*null model (outcome + covariables)
+logistic educacao novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if usegenetica==1
+
+logistic educacao iznovo5e8 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if usegenetica==1
+
+logistic educacao iznovo5e6 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if usegenetica==1
+
+logistic educacao iznovo5e2 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if usegenetica==1
+
+logistic educacao iznovo05 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if usegenetica==1
+ 
+logistic educacao iznovo1 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if usegenetica==1
+
+*  TABELA SUPLEMENTAR 3
+
+*********************testando o PRS com SDQ ao longo do tempo
+sum conduct15a_cont conduct11a_cont conduct6a_cont
+sum zpt5e8 zpt5e6 zpt5e4 zpt5e3 zpt005 zpt01 zpt02 zpt03 zpt04 zpt05
+
+regress iznovo5e8 conduct4a_cont novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if usegenetica==1
+
+regress iznovo5e6 conduct4a_cont novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if usegenetica==1
+
+regress iznovo5e2 conduct4a_cont novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if usegenetica==1
+
+regress iznovo05 conduct4a_cont novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if usegenetica==1
+
+regress iznovo1 conduct4a_cont novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if usegenetica==1
+
+
+
+
+
+
+
+
+
+*############ APRTID DAQUI EU NÃO USEI NESSE ROTEIRO NOVO DE ANÁLISES
+
+
+
+**  TABELA 3
+
+ta trajfinal, nol
+ta educacao trajfinal if usegenetica==1, col chi
+ta educacao trajfinal if usegenetica==1, row chi
+
+************************************ low como referencia
+mlogit trajfinal educacao if usegenetica==1, b(0) rr
+testparm educacao
+
+mlogit trajfinal educacao asexo esc48 renda48 edi itercamb lowbdi lowqi attention if usegenetica==1, b(0) rr
+
+mlogit trajfinal educacao asexo esc48 renda48 edi itercamb lowbdi lowqi attention conduct4a_cont if usegenetica==1, b(0) rr
+
+mlogit trajfinal educacao asexo esc48 renda48 edi tercamb lowbdi attention if usegenetica==1, b(0) rr
+testparm educacao
+
+******************* childhood-limited como referencia == 2
+mlogit trajfinal educacao if usegenetica==1, b(2) rr
+testparm educacao
+
+mlogit trajfinal educacao asexo esc48 renda48 edi itercamb lowbdi lowqi attention if usegenetica==1, b(2) rr
+
+mlogit trajfinal educacao asexo esc48 renda48 edi itercamb lowbdi lowqi attention conduct4a_cont if usegenetica==1, b(2) rr
+testparm educacao
+
+******************** adolescent-onset como referencia == 1
+mlogit trajfinal educacao if usegenetica==1, b(1) rr
+testparm educacao
+
+mlogit trajfinal educacao asexo esc48 renda48 edi itercamb lowbdi lowqi attention if usegenetica==1, b(1) rr
+
+mlogit trajfinal educacao asexo esc48 renda48 edi itercamb lowbdi lowqi attention conduct4a_cont if usegenetica==1, b(1) rr
+
+testparm educacao
+
+***testando o juste com o CBCL-4a
+************************************ low como referencia
+mlogit trajfinal izpt5e8 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1, b(0) rr
+testparm izpt5e8
+mlogit trajfinal izpt5e6 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1, b(0) rr
+testparm izpt5e6
+mlogit trajfinal izpt5e4 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1, b(0) rr
+testparm izpt5e4
+mlogit trajfinal izpt5e3 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1, b(0) rr
+testparm izpt5e3
+mlogit trajfinal izpt005 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1, b(0) rr
+testparm izpt005
+mlogit trajfinal izpt01 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1, b(0) rr
+testparm izpt01
+mlogit trajfinal izpt02 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1, b(0) rr
+testparm izpt02
+mlogit trajfinal izpt03 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1, b(0) rr
+testparm izpt03
+mlogit trajfinal izpt04 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1, b(0) rr
+testparm izpt04
+mlogit trajfinal izpt05 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1, b(0) rr
+testparm izpt05
+
+************** childhood-limited como referencia == 2
+mlogit trajfinal izpt5e8 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1, b(2) rr
+testparm izpt5e8
+mlogit trajfinal izpt5e6 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1, b(2) rr
+testparm izpt5e6
+mlogit trajfinal izpt5e4 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1, b(2) rr
+testparm izpt5e4
+mlogit trajfinal izpt5e3 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1, b(2) rr
+testparm izpt5e3
+mlogit trajfinal izpt005 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1, b(2) rr
+testparm izpt005
+mlogit trajfinal izpt01 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1, b(2) rr
+testparm izpt01
+mlogit trajfinal izpt02 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1, b(2) rr
+testparm izpt02
+mlogit trajfinal izpt03 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1, b(2) rr
+testparm izpt03
+mlogit trajfinal izpt04 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1, b(2) rr
+testparm izpt04
+mlogit trajfinal izpt05 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1, b(2) rr
+testparm izpt05
+
+logistic comp1 educacao asexo esc48 renda48 edi tercamb lowbdi lowqi attention conduct4a_cont if usegenetica==1
+logistic comp2 educacao asexo esc48 renda48 edi tercamb lowbdi lowqi attention conduct4a_cont if usegenetica==1
+
+******************* adolescente-onset como referencia == 1
+mlogit trajfinal izpt5e8 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1, b(1) rr
+testparm izpt5e8
+mlogit trajfinal izpt5e6 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1, b(1) rr
+testparm izpt5e6
+mlogit trajfinal izpt5e4 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1, b(1) rr
+testparm izpt5e4
+mlogit trajfinal izpt5e3 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1, b(1) rr
+testparm izpt5e3
+mlogit trajfinal izpt005 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1, b(1) rr
+testparm izpt005
+mlogit trajfinal izpt01 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1, b(1) rr
+testparm izpt01
+mlogit trajfinal izpt02 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1, b(1) rr
+testparm izpt02
+mlogit trajfinal izpt03 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1, b(1) rr
+testparm izpt03
+mlogit trajfinal izpt04 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1, b(1) rr
+testparm izpt04
+mlogit trajfinal izpt05 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1, b(1) rr
+testparm izpt05
+
+********************************************
+**** testando as categorias de multinomial
+
+**modelo 1
+logistic comp1 izpt5e8 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo if usegenetica==1
+
+logistic comp1 izpt5e6 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo if usegenetica==1
+
+logistic comp1 izpt5e4 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo if usegenetica==1
+
+logistic comp1 izpt5e3 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo if usegenetica==1
+
+logistic comp1 izpt005 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo if usegenetica==1
+ 
+logistic comp1 izpt01 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo if usegenetica==1
+
+logistic comp1 izpt02 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo if usegenetica==1
+
+logistic comp1 izpt03 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo if usegenetica==1
+
+logistic comp1 izpt04 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo if usegenetica==1
+
+logistic comp1 izpt05 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo if usegenetica==1
+
+logistic comp1 educacao asexo esc48 renda48 edi tercamb lowbdi lowqi attention if usegenetica==1
+
+**modelo 2
+logistic comp2 izpt5e8 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo if usegenetica==1
+
+logistic comp2 izpt5e6 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo if usegenetica==1
+
+logistic comp2 izpt5e4 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo if usegenetica==1
+
+logistic comp2 izpt5e3 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo if usegenetica==1
+
+logistic comp2 izpt005 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo if usegenetica==1
+ 
+logistic comp2 izpt01 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo if usegenetica==1
+
+logistic comp2 izpt02 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo if usegenetica==1
+
+logistic comp2 izpt03 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo if usegenetica==1
+
+logistic comp2 izpt04 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo if usegenetica==1
+
+logistic comp2 izpt05 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo if usegenetica==1
+
+logistic comp2 educacao asexo esc48 renda48 edi tercamb lowbdi lowqi attention if usegenetica==1
+
+**testando o PRS com violencia
+logistic anycrime educacao asexo esc48 renda48 edi tercamb lowbdi lowqi attention if usegenetica==1
+logistic anycrime educacao if usegenetica==1
+
+logistic anycrime izpt5e8 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo if usegenetica==1
+logistic anycrime izpt5e6 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo if usegenetica==1
+logistic anycrime izpt5e4 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo if usegenetica==1
+logistic anycrime izpt5e3 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo if usegenetica==1
+logistic anycrime izpt005 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo if usegenetica==1
+logistic anycrime izpt01 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo if usegenetica==1
+logistic anycrime izpt02 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo if usegenetica==1
+logistic anycrime izpt03 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo if usegenetica==1
+logistic anycrime izpt04 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo if usegenetica==1
+logistic anycrime izpt05 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo if usegenetica==1
+
+
+**testando o PRS com violencia
+logistic anycrime educacao asexo esc48 renda48 edi tercamb lowbdi lowqi attention conduct4a_cont if usegenetica==1
+logistic anycrime educacao asexo esc48 renda48 edi tercamb lowbdi lowqi attention conduct6a_cont if usegenetica==1
+logistic anycrime educacao if usegenetica==1
+
+logistic anycrime izpt5e8 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1
+logistic anycrime izpt5e6 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1
+logistic anycrime izpt5e4 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1
+logistic anycrime izpt5e3 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1
+logistic anycrime izpt005 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1
+logistic anycrime izpt01 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1
+logistic anycrime izpt02 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1
+logistic anycrime izpt03 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1
+logistic anycrime izpt04 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1
+logistic anycrime izpt05 PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10 asexo conduct4a_cont if usegenetica==1
+
+
+**testando a associação da educação com o escore do ambiente
+regress scoreamb educacao
+regress scoreamb i.trajfinal
+regress scoreamb i.anycrime
+
+
+**figura PRS
+mean ept01, over(trajfinal)
+graph box izpt5e8 izpt5e6 izpt005 izpt05 if usegenetica==1, over(trajfig)
+graph hbox izpt5e8 izpt5e6 izpt005 izpt05 if usegenetica==1, over(trajfig)
+
+graph box izpt5e8 if usegenetica==1, over(trajfig)
+graph box izpt5e6 if usegenetica==1, over(trajfig)
+graph box izpt005 if usegenetica==1, over(trajfig)
+graph box izpt05 if usegenetica==1, over(trajfig)
+
+graph box izpt5e8 if usegenetica==1, over(anycrime)
+graph box izpt5e6 if usegenetica==1, over(anycrime)
+graph box izpt005 if usegenetica==1, over(anycrime)
+graph box izpt05 if usegenetica==1, over(anycrime)
+
+la def anycrime 0"Non-violence" 1"Violence"
+la val anycrime anycrime
+ta anycrime
+
+**figura observacional
+graph box educacao if usegenetica==1, over(trajfig)
+hist educacao if usegenetica==1, over(trajfig)
+
+ta educacao trajfig if usegenetica==1 & itercamb!=., col chi
+ta educacao trajfig if usegenetica==1, col chi
+ ta itercamb trajfig if usegenetica==1, col chi
+
+
+
+*****testando interação com o escore dicotomico
+sum izpt005, d
+hist izpt005
+
+drop prs
+gen prs=izpt005
+recode prs min/-0.0692952=0 -0.0692953/max=1
+sum prs
+ta prs
+br prs
+
+
+***figura 1
+
+ta educacao trajfinal if usegenetica==1, col chi
+prop educacao trajfinal if usegenetica==1
+prop educacao if usegenetica==1, over (trajfinal)
+
+mean izpt005 if usegenetica==1, over(trajfig)
+
+
+*############## 24-11-2021
+***** teste escrita artigo
+**Because repeating a grade is considerably less common in better schools (X% vs. Y%, comparing children in schools classified as the top and bottom tertiles in the current study)
+
+
+ta educacao itercamb if usegenetica==1, col chi
+ta educacao itercamb if usegenetica==1, row chi
+
+
+*******************************27/05/2021
+logistic lowpersist novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo esc48 renda48 itercamb##c.izpt005
+
+logistic lowpersist c.izpt005 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo esc48 renda48 if itercamb==1
+
+logistic lowpersist c.izpt005 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo esc48 renda48 if itercamb==2
+
+logistic lowpersist c.izpt005 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo esc48 renda48 if itercamb==3
+
+
+logistic lowadols novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo esc48 renda48 itercamb##c.izpt005
+
+logistic lowadols c.izpt005 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo esc48 renda48 if itercamb==1
+
+logistic lowadols c.izpt005 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo esc48 renda48 if itercamb==2
+
+logistic lowadols c.izpt005 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo esc48 renda48 if itercamb==3
+
+
+logistic lowchild novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo esc48 renda48 itercamb##c.izpt005
+
+logistic lowchild c.izpt005 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo esc48 renda48 if itercamb==1
+
+logistic lowchild c.izpt005 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo esc48 renda48 if itercamb==2
+
+logistic lowchild c.izpt005 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo esc48 renda48 if itercamb==3
+
+
+*****************************************8***observaional
+logistic lowpersist asexo esc48 renda48 edi lowbdi lowqi attention itercamb##educacao
+
+logistic lowpersist educacao asexo esc48 renda48 edi lowbdi lowqi attention if itercamb==1
+
+logistic lowpersist educacao asexo esc48 renda48 edi lowbdi lowqi attention if itercamb==2
+
+logistic lowpersist educacao asexo esc48 renda48 edi lowbdi lowqi attention if itercamb==3
+
+
+logistic lowchild asexo esc48 renda48 edi lowbdi lowqi attention itercamb##educacao
+
+logistic lowchild educacao asexo esc48 renda48 edi lowbdi lowqi attention if itercamb==1
+
+logistic lowchild educacao asexo esc48 renda48 edi lowbdi lowqi attention if itercamb==2
+
+logistic lowchild educacao asexo esc48 renda48 edi lowbdi lowqi attention if itercamb==3
+
+
+logistic lowadols asexo esc48 renda48 edi lowbdi lowqi attention itercamb##educacao
+
+logistic lowadols educacao asexo esc48 renda48 edi lowbdi lowqi attention if itercamb==1
+
+logistic lowadols educacao asexo esc48 renda48 edi lowbdi lowqi attention if itercamb==2
+
+logistic lowadols educacao asexo esc48 renda48 edi lowbdi lowqi attention if itercamb==3
+
+
+
+
+*******************************************8
+*********************************************
+*********************************************8 
+
+
+********TESTANDO A INTERAÇÃO
+
+** trocar o banco == usar o banco "banco interação (exclui sem info genetica"
+ta usegenetica
+drop if usegenetica==0
+
+****** criar as variaveis para testar a interação
+
+**** Early-onset persistent vs. Childhood limited	
+ta trajfinal
+ta trajfinal, nol
+gen comp1=.
+replace comp1=1 if trajfinal==3
+replace comp1=0 if trajfinal==2
+la def comp1 1"persistent" 0"childhood-limited"
+la val comp1 comp1
+ta comp1
+
+**** Early-onset persistent vs. Adolescent onset
+gen comp2=.
+replace comp2=1 if trajfinal==3
+replace comp2=0 if trajfinal==1
+la def comp2 1"persistent" 0"adolescente"
+la val comp2 comp2
+ta comp2
+
+*** comparação com low x persistent
+gen lowpersist=.
+replace lowpersist=1 if trajfinal==3
+replace lowpersist=0 if trajfinal==0
+la def lowpersist 1"persistent" 0"low"
+la val lowpersist lowpersist
+ta lowpersist
+
+*** comparação com low x child
+gen lowchild=.
+replace lowchild=1 if trajfinal==2
+replace lowchild=0 if trajfinal==0
+la def lowchild 1"childhood" 0"low"
+la val lowchild lowchild
+ta lowchild
+
+*** comparação com low x adolescente
+gen lowadols=.
+replace lowadols=1 if trajfinal==1
+replace lowadols=0 if trajfinal==0
+la def lowadols 1"adolescente" 0"low"
+la val lowadols lowadols
+ta lowadols
+
+**PRS
+** interação com persistent
+
+logistic lowpersist asexo esc48 renda48 edi lowbdi lowqi attention  educacao##itercamb
+logistic lowpersist educacao asexo esc48 renda48 edi lowbdi lowqi attention if itercamb==1
+logistic lowpersist educacao asexo esc48 renda48 edi lowbdi lowqi attention if itercamb==2
+logistic lowpersist educacao asexo esc48 renda48 edi lowbdi lowqi attention if itercamb==3
+
+logistic lowpersist asexo esc48 edi lowbdi lowqi attention  educacao##renda48
+logistic lowpersist educacao asexo esc48 edi lowbdi lowqi attention if renda48==1
+logistic lowpersist educacao asexo esc48 edi lowbdi lowqi attention if renda48==2
+logistic lowpersist educacao asexo esc48 edi lowbdi lowqi attention if renda48==3
+
+logistic lowpersist esc48 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo renda48##c.zpt005
+logistic lowpersist c.zpt005 esc48 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if renda48==1
+logistic lowpersist c.zpt005 esc48 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if renda48==2
+logistic lowpersist c.zpt005 esc48 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if renda48==3
+
+
+** interação com child
+logistic lowchild asexo esc48 edi lowbdi lowqi attention  educacao##renda48
+logistic lowchild educacao asexo esc48 edi lowbdi lowqi attention if renda48==1
+logistic lowchild educacao asexo esc48 edi lowbdi lowqi attention if renda48==2
+logistic lowchild educacao asexo esc48 edi lowbdi lowqi attention if renda48==3
+
+logistic lowchild esc48 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo renda48##c.zpt005
+logistic lowchild c.zpt005 esc48 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if renda48==1
+logistic lowchild c.zpt005 esc48 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if renda48==2
+logistic lowchild c.zpt005 esc48 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if renda48==3
+
+
+** interação com adolescent-onset
+logistic lowadols asexo esc48 edi lowbdi lowqi attention educacao##renda48
+logistic lowadols educacao asexo esc48 edi lowbdi lowqi attention if renda48==1
+logistic lowadols educacao asexo esc48 edi lowbdi lowqi attention if renda48==2
+logistic lowadols educacao asexo esc48 edi lowbdi lowqi attention if renda48==3
+
+logistic lowadols esc48 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo renda48##c.zpt005
+logistic lowadols c.zpt005 esc48 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if renda48==1
+logistic lowadols c.zpt005 esc48 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if renda48==2
+logistic lowadols c.zpt005 esc48 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if renda48==3
+
+
+
