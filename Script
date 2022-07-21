@@ -112,4 +112,26 @@ logistic lowadols c.iznovo5e2 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_
 logistic lowadols c.iznovo5e2 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo esc48 renda48 if itercamb==3
 
 
+#Supplementary Table 2: Binary logistic regression model results. For that use:
+#Null model (outcome + covariables)
+logistic educacao novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if usegenetica==1
+logistic educacao iznovo5e8 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if usegenetica==1
+logistic educacao iznovo5e6 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if usegenetica==1
+logistic educacao iznovo5e2 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if usegenetica==1
+logistic educacao iznovo05 novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if usegenetica==1
+
+
+#Supplementary Table 3: Adjusted linear regression model results for the association between education-PRS as exposure and conduct problems at 4-years. For that use:
+regress iznovo5e8 conduct4a_cont novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if usegenetica==1
+regress iznovo5e6 conduct4a_cont novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if usegenetica==1
+regress iznovo5e2 conduct4a_cont novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if usegenetica==1
+regress iznovo05 conduct4a_cont novo_pc1 novo_pc2 novo_pc3 novo_pc4 novo_pc5 novo_pc6 novo_pc7 novo_pc8 novo_pc9 novo_pc10 asexo if usegenetica==1
+
+
+
+
+
+
+
+
 
