@@ -1,1 +1,21 @@
-# Data from: http://www.pgscatalog.org/score/PGS002231/
+# Step 1: Quality control using R
+
+#GWAS_EA_excl23andMe.txt - Educational attainment (EA) GWAS meta-analysis of all discovery cohorts except 23andMe. Sample Size = 766,345
+#renamed = GWAS_EA_excl23andMe.txt === educacao_excl23andMe.txt
+To apply the quality control, use:
+edu23_semMHC <- subset(educacao_excl23andMe.txt, !(CHR==6 & POS %in% (26000000:33000000)))
+edu23_semMHC_maf <- subset(edu23_semMHC, subset=EAF>0.01) 
+edu23_semMHC_maf2 <- subset(edu23_semMHC_maf, subset=EAF<0.99) 
+write.table(edu23_semMHC_maf2,file="C:/Users/Luciana/Documents/edu23_mafmch", sep='\t',na="",quote=FALSE, row.names = FALSE)
+getwd()
+
+
+# Step 2: Performing PCAs using Plink
+
+#First make a cut in the .bed and .bim database according to the people to be kept in the final analysis (PCAs should be built only for the individuals who will enter the final analysis: here n=3,472)
+For that use:
+plink --bfile ffinalcoo04.qc --keep keepedu.txt --make-bed --out banco_edupca
+To create the PCAs, use:
+plink --bfile banco_edupca --pca 10 header tabs var-wts --out pca_keepedu 
+
+
